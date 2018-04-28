@@ -5,8 +5,8 @@ trait FormGenerator
 {
     protected static $initialInput           = 'input';
     protected static $initialInputType       = 'text';
-    protected static $initialLabelClasses    = 'control-label col-md-4';
-    protected static $initialInputDivClasses = 'col-md-6';
+    protected static $initialLabelClasses    = 'control-label col-md-2';
+    protected static $initialInputDivClasses = 'col-md-5';
     protected static $initialInputClasses    = 'form-control';
 
     /**
@@ -89,14 +89,18 @@ trait FormGenerator
                 $inputContainerAttributes = $input_container_attributes;
             }
 
-            // Concat the field code
-            $formCode .= "
-            <div class='form-group' id='$inputContainerId' class='$inputContainerClasses' $inputContainerAttributes>
-                <label for='$key' class='$labelClasses'>$label</label>
-                <div class='".$inputDivClasses."'>
-                $inputsCode
-                </div>
-            </div>";
+            if(!isset($props['element'])) {
+                // Concat the field code
+                $formCode .= "
+                <div class='form-group' id='$inputContainerId' class='$inputContainerClasses' $inputContainerAttributes>
+                    <label for='$key' class='$labelClasses'>$label</label>
+                    <div class='".$inputDivClasses."'>
+                    $inputsCode
+                    </div>
+                </div>";
+            } else {
+                $formCode .= $inputsCode;
+            }
 
         }
 
@@ -122,22 +126,32 @@ trait FormGenerator
 
         // It there's not input provided so it will be the
         // initial one
-        if (!isset($props['input'])) {
+        if (!isset($props['input']) && !isset($props['element'])) {
             $input = static::$initialInput;
         }
 
-        switch ($input) {
+        if(isset($props['input'])) {
+            switch ($input) {
 
-            // In case the input is a normal input tag
-            case 'input':
-                $fieldCode = static::generateInputCode($key, $props, $current);
-                break;
-            case 'select':
-                $fieldCode = static::generateSelectCode($key, $props, $current);
-                break;
-            case 'textarea':
-                $fieldCode = static::generateTextAreaCode($key, $props, $current);
-                break;
+                // In case the input is a normal input tag
+                case 'input':
+                    $fieldCode = static::generateInputCode($key, $props, $current);
+                    break;
+                case 'select':
+                    $fieldCode = static::generateSelectCode($key, $props, $current);
+                    break;
+                case 'textarea':
+                    $fieldCode = static::generateTextAreaCode($key, $props, $current);
+                    break;
+            }
+        }
+
+        if(isset($props['element'])) {
+            switch ($element) {
+                case 'hr':
+                    $fieldCode = static::generateLineCode($props);
+                    break;
+            }
         }
 
         return $fieldCode;
@@ -381,5 +395,24 @@ trait FormGenerator
         $inputCode .= "</textarea>";
 
         return $inputCode;
+    }
+
+    /**
+     * Generate a html line between fields.
+     * @param  array  $props
+     * @return string
+     */
+    public static function generateLineCode(array $props): string
+    {
+        extract($props);
+
+        if (isset($props['input_classes'])) {
+
+            $inputClasses = $input_classes;
+        }
+
+        $lineCode = "<hr class='$inputClasses'/>";
+
+        return $lineCode;
     }
 }
