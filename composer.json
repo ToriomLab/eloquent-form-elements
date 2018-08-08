@@ -1,11 +1,13 @@
 {
     "name": "toriomlab/eloquent-form-elements",
     "description": "Simple eloquent model form elements generator package for Laravel 5.5",
+    "keywords": ["Laravel","Form Generator", "Eloquent Form Generator"],
     "license": "MIT",
     "authors": [
         {
             "name": "Toriom Lab",
-            "email": "info@toriom.com"
+            "email": "info@toriom.com",
+            "homepage": "http://toriom.com",
         }
     ],
     "require": {
@@ -18,6 +20,11 @@
         },
         "files": ["src/helpers.php"]
     },
+
     "minimum-stability": "dev",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "extra": {
+    "branch-alias": {
+      "dev-master": "1.x.x-dev",
+    }
 }
