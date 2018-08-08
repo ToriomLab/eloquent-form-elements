@@ -7,7 +7,7 @@
         {
             "name": "Toriom Lab",
             "email": "info@toriom.com",
-            "homepage": "http://toriom.com",
+            "homepage": "http://toriom.com"
         }
     ],
     "require": {
@@ -25,6 +25,7 @@
     "prefer-stable": true,
     "extra": {
     "branch-alias": {
-      "dev-master": "1.x.x-dev",
+            "dev-master": "1.x.x-dev"
+        }
     }
 }
