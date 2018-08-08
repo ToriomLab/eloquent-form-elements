@@ -29,7 +29,7 @@ By defining a static array in your model called `$fields` and its structure shou
 ```PHP
 public static $fields = [
     'field_name_attribute' => [ // Field name attribute should be the column name in DB as well to retreive its value in update form generation.
-        'label'    => 'اسم الحقل', // Field Label.
+        'label'    => 'Field Label Text', // Field Label.
         'input'    => 'input', // Field Type.
         'type'     => 'text'  // Field Input Type.
     ],
@@ -223,19 +223,16 @@ Example for manual `belongsTo` relation with createValueCallbacks and updateValu
 * @var array
 */
 public static $fields = [
-    'name_ar' => [
-        'label' => 'الاسم بالعربية',
-    ],
-    'name_en' => [
-        'label' => 'الاسم بالإنجليزية',
+    'name' => [
+        'label' => 'Category Name',
     ],
     'category_id' => [
-        'label' => 'التصنيف الأساسي',
+        'label' => 'Categories',
         'input' => 'select',
         'options' => [
-            '' => 'لا تصنيف',
+            '' => 'All Categories',
         ],
-        'selectFrom' => 'name_ar',
+        'selectFrom' => 'name',
         'valueFrom' => 'id',
         'valueCallback' => 'getCurrentValue', // Can be replaced with 'column' => 'category_id' for belongsTo relation
         'updateValueFallback' => 'getUpdateCategories',
@@ -280,3 +277,5 @@ Notice that you can pass a third parameter to `generate_fields` parameter to exc
 So if we called `generate_fields('App\User', null, 'age')` a creation form will be created without `age` field. You can also pass an array so `generate_fields('App\User', null, ['age', 'roles'])` will create a creation form without roles and age fields.
 
 ##### Don't hesitate to make a pull request or post an issue if found.
+
+##### This package is cloned from lilessam/eloquent-fields

@@ -312,13 +312,12 @@ trait FormGenerator
         }
 
         // If there's a valueCallback function
-        if (isset($valueCallback) || isset($updateValueFallback) || isset($createValueFallback)) {
-            //dd($current->getCategoriesExceptMe());
-
+        if ((isset($valueCallback) || isset($updateValueFallback) || isset($createValueFallback))) {
+            
             // Get All records
             if (isset($updateValueFallback) || isset($createValueFallback)) {
                 $function = isset($current) ? call_user_func(array($current, $updateValueFallback)) :
-                call_user_func(get_class($current).'::'.$createValueFallback);
+                call_user_func(get_called_class().'::'.$createValueFallback);
             } else {
                 $function = is_string($valueFallback) ? call_user_func(get_class($current).'::'.$valueFallback) : $valueFallback;
             }
