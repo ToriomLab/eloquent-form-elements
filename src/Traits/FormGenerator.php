@@ -337,7 +337,7 @@ trait FormGenerator
 
                     // If there's createValue and updateValue so it's manual relation
                     } else {
-                        $selected_ids = isset($valueCallback) ? collect(call_user_func([$current, $valueCallback]))->all() : (array) $current->{$column};
+                        $selected_ids = (array) $current->{$key};
                     }
 
                     if (in_array($record->{$valueFrom}, $selected_ids)) {
