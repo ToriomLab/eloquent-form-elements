@@ -91,22 +91,40 @@ There are multiple additional things that can be very usefull in all your fields
 
 
 #### Examples.
-A normal text field:
+Generate normal text field:
 ```PHP
 'name' => [
-        'label' => 'Your name',
-        'input' => 'input',
-        'type' => 'text'
+            'label' => 'Your name',
+            'input' => 'input',
+            'type' => 'text'
     	],
 ```
-A number field:
+Generate number field:
 ```PHP
 'age' => [
-        'label' => 'Your age',
-        'input' => 'input',
-        'type' => 'number'
+            'label' => 'Your age',
+            'input' => 'input',
+            'type' => 'number'
     	],
 ```
+Generate HTML Image:
+```PHP
+'avatar' => [ 
+                'label'    => 'Label Name',
+                'element'    => 'img',
+                'image_classes' => 'img-rounded img-thumbnail img-responsive',
+                'storage_folder' => 'storage/courses/',
+            ],
+```
+
+Generate HTML Line:
+```PHP
+'line' => [
+            'element' => 'hr'
+        ],
+```
+
+
 If the model belongs to a role and we wanna make a select field for the roles.
 ```PHP
 'role_id' => [

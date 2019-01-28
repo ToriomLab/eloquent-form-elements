@@ -1,6 +1,6 @@
 <?php
 namespace ToriomLab\EloquentFormElements\Traits;
-
+use Session;
 trait FormGenerator
 {
     protected static $initialInput           = 'input';
@@ -20,7 +20,8 @@ trait FormGenerator
     {
         // If it's an update form get the current object
         $current = $id != null ? self::find($id) : null;
-
+        $current = ($current == null && !empty(Session::get('_old_input'))) ? (object) Session::get('_old_input') : $current;
+        
         // Initial code variable
         $formCode = '';
 
@@ -44,10 +45,8 @@ trait FormGenerator
 
             }
             
-
             // Generate the inputs code theirselves
             $inputsCode = static::generateFieldCode($key, $props, $current);
-
             
             // Set initial values
             // The real variables which will be injected to the generated
@@ -73,6 +72,7 @@ trait FormGenerator
             $inputContainerId = '';
             $inputContainerClasses = '';
             $inputContainerAttributes = '';
+            $inputSubLable = '';
 
             if (isset($props['input_container_id'])) {
 
@@ -89,15 +89,28 @@ trait FormGenerator
                 $inputContainerAttributes = $input_container_attributes;
             }
 
-            if(!isset($props['element'])) {
+            if(isset($props['sub_title'])) {
+                $inputSubLable = $sub_title;
+            }
+            if(@$props['element'] != 'hr') {
+                // Is img element
+                if(@$props['element'] == 'img')
+                    $imageId = str_replace('_preview', '', $key);
+                // Is img element empty 
+                if(@$props['element'] == 'img' && ($current == null || empty($current->{$imageId}))){
+                    $formCode .= '';
+                }
+                else
                 // Concat the field code
                 $formCode .= "
-                <div class='form-group' id='$inputContainerId' class='$inputContainerClasses' $inputContainerAttributes>
+                <div class='form-group $inputContainerClasses' id='$inputContainerId' $inputContainerAttributes>
                     <label for='$key' class='$labelClasses'>$label</label>
                     <div class='".$inputDivClasses."'>
-                    $inputsCode
+                        ". $inputsCode ."
+                        ". $inputSubLable ."
                     </div>
                 </div>";
+
             } else {
                 $formCode .= $inputsCode;
             }
@@ -151,6 +164,9 @@ trait FormGenerator
                 case 'hr':
                     $fieldCode = static::generateLineCode($props);
                     break;
+                case 'img':
+                    $fieldCode = static::generateImageCode($key, $props, $current);
+                    break;
             }
         }
 
@@ -201,11 +217,13 @@ trait FormGenerator
 
         // If it's an update input
         if ($current != null) {
-            
-            $value = isset($valueCallback) ? call_user_func([$current, $valueCallback]) : $current->{$key};
+            $value = isset($valueCallback) ? call_user_func([$current, $valueCallback]) : @$current->{$key};
             // Then add the value
             $inputCode .= " value='" . $value . "'";
 
+        } else if(@$current == null && !empty($valueCallback)) {
+            $value = isset($valueCallback) ? call_user_func(get_called_class().'::'.$valueCallback) : '';
+            $inputCode .= " value='" . $value . "'";
         }
         $inputCode .= "/>";
 
@@ -337,6 +355,7 @@ trait FormGenerator
 
                     // If there's createValue and updateValue so it's manual relation
                     } else {
+                        // $selected_ids = isset($valueCallback) ? collect(call_user_func([$current, $valueCallback]))->all() : (array) $current->{$column};
                         $selected_ids = (array) $current->{$key};
                     }
 
@@ -404,14 +423,53 @@ trait FormGenerator
     public static function generateLineCode(array $props): string
     {
         extract($props);
-
+        $elementClasses  = '';
         if (isset($props['input_classes'])) {
 
-            $inputClasses = $input_classes;
+            $elementClasses = $input_classes;
         }
 
-        $lineCode = "<hr class='$inputClasses'/>";
+        $lineCode = "<hr class='$elementClasses'/>";
 
         return $lineCode;
+    }
+
+    /**
+     * Generate a html line between fields.
+     * @param  array  $props
+     * @return string
+     */
+    public static function generateImageCode(string $key, array $props, $current): string
+    {
+        $imageClasses   = '';
+        $imageId        = str_replace('_preview', '', $key);
+        $imageCode      = '';
+        if($current != null)
+        {
+            $src = isset($valueCallback) ? call_user_func([@$current, $valueCallback]) : @$current->{$imageId};
+            if(!empty($src))
+            {
+                // Extract props
+                extract($props);
+
+                // If there's a custom image tag classes
+                if (isset($props['image_classes'])) {
+
+                    $imageClasses = $image_classes;
+                }
+
+                // if there's an inject_attributes
+                $injectAttributes = isset($props['inject_attributes']) ? $inject_attributes : '';
+
+                // Basice image code
+                $imageCode = "<img class='$imageClasses' $injectAttributes ";
+                
+                // Then add the value
+                $imageCode .= " src='" . asset($props['storage_folder'] . $src) . "'";
+                
+                $imageCode .= "/>";
+            }
+        }
+        return $imageCode;
     }
 }
