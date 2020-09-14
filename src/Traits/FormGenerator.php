@@ -337,34 +337,15 @@ trait FormGenerator
                 $function = isset($current) ? call_user_func(array($current, $updateValueFallback)) :
                 call_user_func(get_called_class().'::'.$createValueFallback);
             } else {
-                $function = is_string($valueFallback) ? call_user_func(get_class($current).'::'.$valueFallback) : $valueFallback;
             }
             $allRecords = $function;
 
             // All options records loop
-            foreach ($allRecords as $record) {
 
-                $ifSelected = '';
 
-                if (isset($current)) {
-                
-                    // Selected ids
-                    // If it's a normal callbacks
-                    if (!isset($updateValueFallback)) {
-                        $selected_ids = collect(call_user_func([$current, $valueCallback]))->pluck($valueFrom)->all();
-
-                    // If there's createValue and updateValue so it's manual relation
-                    } else {
-                        // $selected_ids = isset($valueCallback) ? collect(call_user_func([$current, $valueCallback]))->all() : (array) $current->{$column};
-                        $selected_ids = (array) $current->{$key};
                     }
 
-                    if (in_array($record->{$valueFrom}, $selected_ids)) {
-                        $ifSelected = "selected='selected'";
-                    }       
                 }
-                // Concat the option code
-                $optionsCode .= "<option value='".$record->{$valueFrom}."' $ifSelected>".$record->{$selectFrom}."</option>";
             }
         }
 
