@@ -8,6 +8,12 @@ trait FormGenerator
     protected static $initialLabelClasses    = 'control-label col-md-2';
     protected static $initialInputDivClasses = 'col-md-5';
     protected static $initialInputClasses    = 'form-control';
+    public static $model;
+
+    protected static function bootFormGenerator()
+    {
+        static::$model = new self();
+    }
 
     /**
      * Generate form fields code.
@@ -21,7 +27,7 @@ trait FormGenerator
         // If it's an update form get the current object
         $current = $id != null ? self::find($id) : null;
         $current = ($current == null && !empty(Session::get('_old_input'))) ? (object) Session::get('_old_input') : $current;
-        
+
         // Initial code variable
         $formCode = '';
 
@@ -44,10 +50,10 @@ trait FormGenerator
                 }
 
             }
-            
+
             // Generate the inputs code theirselves
             $inputsCode = static::generateFieldCode($key, $props, $current);
-            
+
             // Set initial values
             // The real variables which will be injected to the generated
             // htnk code will use camelCase and the developer preferences will
@@ -57,7 +63,7 @@ trait FormGenerator
 
             // Extract Props
             extract($props);
-            
+
             // If label classes are provided
             if (isset($props['label_classes'])) {
                 // Override the initial one
@@ -96,13 +102,13 @@ trait FormGenerator
                 // Is img element
                 if(@$props['element'] == 'img')
                     $imageId = str_replace('_preview', '', $key);
-                // Is img element empty 
+                // Is img element empty
                 if(@$props['element'] == 'img' && ($current == null || empty($current->{$imageId}))){
                     $formCode .= '';
                 }
                 else
-                // Concat the field code
-                $formCode .= "
+                    // Concat the field code
+                    $formCode .= "
                 <div class='form-group $inputContainerClasses' id='$inputContainerId' $inputContainerAttributes>
                     <label for='$key' class='$labelClasses'>$label</label>
                     <div class='".$inputDivClasses."'>
@@ -148,13 +154,30 @@ trait FormGenerator
 
                 // In case the input is a normal input tag
                 case 'input':
-                    $fieldCode = static::generateInputCode($key, $props, $current);
+                    // translatable
+                    if (isset(static::$model->translatable) && in_array($key, static::$model->translatable)) {
+                        $fieldCode = '';
+                        $injectAttributes = isset($props['inject_attributes']) ? $inject_attributes : '';
+                        foreach (config('multilang.locales') as $lang_code => $lang_text) {
+                            $fieldCode .= static::generateInputCode($key, $props, $current, $lang_code, $lang_text) . '<br>';
+                        }
+                    } else
+                        $fieldCode = static::generateInputCode($key, $props, $current);
                     break;
                 case 'select':
                     $fieldCode = static::generateSelectCode($key, $props, $current);
                     break;
                 case 'textarea':
-                    $fieldCode = static::generateTextAreaCode($key, $props, $current);
+                    // translatable
+                    if (isset(static::$model->translatable) && in_array($key, static::$model->translatable)) {
+                        $fieldCode = '';
+                        foreach (config('multilang.locales') as $lang_code => $lang_text) {
+                            if(isset($props['input_classes']) && $props['input_classes'] == 'editor')
+                                $fieldCode .= '<strong>'. $lang_text .'</strong>';
+                            $fieldCode .= static::generateTextAreaCode($key, $props, $current, $lang_code, $lang_text) . '<br>';
+                        }
+                    } else
+                        $fieldCode = static::generateTextAreaCode($key, $props, $current);
                     break;
             }
         }
@@ -180,7 +203,7 @@ trait FormGenerator
      * @param  object|null $current
      * @return string
      */
-    public static function generateInputCode(string $key, array $props, $current): string
+    public static function generateInputCode(string $key, array $props, $current, $lang = null, $lang_text = null): string
     {
         $inputClasses = static::$initialInputClasses;
         $inputId = $key;
@@ -210,9 +233,20 @@ trait FormGenerator
         $injectAttributes = isset($props['inject_attributes']) ? $inject_attributes : '';
 
 
+        $input_name = $key;
+        $placeholder = '';
+        // translatable
+        if (isset(static::$model->translatable) && in_array($key, static::$model->translatable)) {
+            if(!empty($current))
+                $current = $current->in($lang,false);
+            $input_name = $lang . '['. $key .']';
+            $placeholder = $lang_text;
+        }
+
+
         // Basice input code
         $inputCode = "
-                <input type='$type' class='$inputClasses' name='$key' id='$inputId' $injectAttributes 
+                <input type='$type' class='$inputClasses' name='$input_name' id='$inputId' $injectAttributes  placeholder='$placeholder'
                 ";
 
         // If it's an update input
@@ -306,12 +340,12 @@ trait FormGenerator
 
                 // If it's an update select field
                 if ($current != null) {
-                    // BelongsTo Relation 
+                    // BelongsTo Relation
                     if ($relation['type'] == 'one') {
                         if ($current->{$relation['column']} == $record->id) {
-                               $ifSelected = "selected='selected'";
+                            $ifSelected = "selected='selected'";
                         }
-                    // Has Many or Belongs To Many
+                        // Has Many or Belongs To Many
                     } elseif ($relation['type'] == 'many') {
                         $relatedIDs = $current->{$relation['name']}()->pluck('id')->toArray();
 
@@ -323,19 +357,19 @@ trait FormGenerator
 
                 // Concat the option code
                 $optionsCode .= "<option value='".$record->{$relation['valueFrom']}."' $ifSelected>"
-                                .$record->{$relation['selectFrom']}
-                                ."</option>";
+                    .$record->{$relation['selectFrom']}
+                    ."</option>";
             }
 
         }
 
         // If there's a valueCallback function
         if ((isset($valueCallback) || isset($updateValueFallback) || isset($createValueFallback))) {
-            
+
             // Get All records
             if (isset($updateValueFallback) || isset($createValueFallback)) {
                 $function = isset($current) ? call_user_func(array($current, $updateValueFallback)) :
-                call_user_func(get_called_class().'::'.$createValueFallback);
+                    call_user_func(get_called_class().'::'.$createValueFallback);
             } else {
                 try{
                     $function = is_string($valueFallback) ? call_user_func(get_class($current).'::'.$valueFallback) : $valueFallback;
@@ -387,7 +421,7 @@ trait FormGenerator
      * @param  object|null $current
      * @return string
      */
-    public static function generateTextAreaCode(string $key, array $props, $current): string
+    public static function generateTextAreaCode(string $key, array $props, $current, $lang = null, $lang_text = null): string
     {
         $inputClasses = static::$initialInputClasses;
         $inputId = $key;
@@ -407,8 +441,18 @@ trait FormGenerator
 
         $injectAttributes = isset($props['inject_attributes']) ? $inject_attributes : '';
 
+        $input_name = $key;
+        $placeholder = '';
+        // translatable
+        if (isset(static::$model->translatable) && in_array($key, static::$model->translatable)) {
+            if(!empty($current))
+                $current = $current->in($lang,false);
+            $input_name = $lang . '['. $key .']';
+            $placeholder = $lang_text;
+        }
+
         // Basice input code
-        $inputCode = "<textarea class='$inputClasses' name='$key' id='$inputId' $injectAttributes>";
+        $inputCode = "<textarea class='$inputClasses' name='$input_name' id='$inputId' $injectAttributes placeholder='$placeholder'>";
 
         // If it's an update input
         if ($current != null) {
@@ -468,10 +512,10 @@ trait FormGenerator
 
                 // Basice image code
                 $imageCode = "<img class='$imageClasses' $injectAttributes ";
-                
+
                 // Then add the value
                 $imageCode .= " src='" . asset($props['storage_folder'] . $src) . "'";
-                
+
                 $imageCode .= "/>";
             }
         }
