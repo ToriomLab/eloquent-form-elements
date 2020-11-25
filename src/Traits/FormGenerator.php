@@ -251,7 +251,7 @@ trait FormGenerator
 
         // If it's an update input
         if ($current != null) {
-            $value = isset($valueCallback) ? call_user_func([$current, $valueCallback]) : @$current->{$key};
+            $value = isset($valueCallback) ? call_user_func([$current, $valueCallback]) : @$current->attributes[$key];
             // Then add the value
             $inputCode .= " value='" . $value . "'";
 
@@ -457,7 +457,7 @@ trait FormGenerator
         // If it's an update input
         if ($current != null) {
             // Then add the value
-            $inputCode .= $current->{$key};
+            $inputCode .= $current->attributes[$key];
         }
         $inputCode .= "</textarea>";
 
