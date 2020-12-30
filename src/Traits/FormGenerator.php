@@ -389,8 +389,11 @@ trait FormGenerator
                         // Selected ids
                         // If it's a normal callbacks
                         if (!isset($updateValueFallback)) {
-                            $selected_ids = collect(call_user_func([$current, $valueCallback]))->pluck($valueFrom)->all();
-
+                            try{
+                                $selected_ids = collect(call_user_func([$current, $valueCallback]))->pluck($valueFrom)->all();
+                            }catch(\Exception $e) {
+                                $selected_ids  = [];
+                            }
                             // If there's createValue and updateValue so it's manual relation
                         } else {
                             // $selected_ids = isset($valueCallback) ? collect(call_user_func([$current, $valueCallback]))->all() : (array) $current->{$column};
