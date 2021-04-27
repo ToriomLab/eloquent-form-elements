@@ -24,8 +24,17 @@ trait FormGenerator
      */
     public static function generateFormFields(int $id = null, $except = null): string
     {
-        // If it's an update form get the current object
-        $current = $id != null ? self::find($id) : null;
+
+        try{
+            if($id != null){
+                $current = $id != null ? self::dontRemember()->find($id) : null;
+            }else{
+                $current = null;
+            }
+        }catch (Exception $e){
+            $current = $id != null ? self::find($id) : null;
+        }
+
         $current = ($current == null && !empty(Session::get('_old_input'))) ? (object) Session::get('_old_input') : $current;
 
         // Initial code variable
