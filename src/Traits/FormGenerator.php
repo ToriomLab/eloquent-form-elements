@@ -31,7 +31,7 @@ trait FormGenerator
             }else{
                 $current = null;
             }
-        }catch (Exception $e){
+        }catch (\Exception $e){
             $current = $id != null ? self::find($id) : null;
         }
 
