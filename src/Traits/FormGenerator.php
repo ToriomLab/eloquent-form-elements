@@ -246,8 +246,15 @@ trait FormGenerator
         $placeholder = '';
         // translatable
         if (isset(static::$model->translatable) && in_array($key, static::$model->translatable)) {
-            if(!empty($current))
-                $current = $current->in($lang,false);
+            try{
+                if(!empty($current) && isset($current->id)){
+                    $current = $current->in($lang,false);
+                }else{
+                    $current = null;
+                }
+            } catch (\Exception $e) {
+                $current = null;
+            }
             $input_name = $lang . '['. $key .']';
             $placeholder = $lang_text;
         }
@@ -457,8 +464,15 @@ trait FormGenerator
         $placeholder = '';
         // translatable
         if (isset(static::$model->translatable) && in_array($key, static::$model->translatable)) {
-            if(!empty($current))
-                $current = $current->in($lang,false);
+            try{
+                if(!empty($current) && isset($current->id)){
+                    $current = $current->in($lang,false);
+                }else{
+                    $current = null;
+                }
+            } catch (\Exception $e) {
+                $current = null;
+            }
             $input_name = $lang . '['. $key .']';
             $placeholder = $lang_text;
         }
