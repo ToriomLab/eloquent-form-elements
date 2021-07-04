@@ -35,7 +35,18 @@ trait FormGenerator
             $current = $id != null ? self::find($id) : null;
         }
 
-        $current = ($current == null && !empty(Session::get('_old_input'))) ? (object) Session::get('_old_input') : $current;
+        if(!empty(Session::get('_old_input'))){
+            if($current==null){
+                $current = (object) Session::get('_old_input');
+            }else{
+                $old = (object) Session::get('_old_input');
+                foreach ($current->attributes as $key => $value){
+                    if(isset($old->{$key})){
+                        $current->{$key} = $old->{$key};
+                    }
+                }
+            }
+        }
 
         // Initial code variable
         $formCode = '';
