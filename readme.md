@@ -1,4 +1,4 @@
-### Eloquent-Fields Generator Package For  Laravel 5.0 up to 5.8
+### Eloquent-Fields Generator Package For  Laravel
 This package actually contains a helper function and a trait.
 Its basic target is to reduce time that developers spend writing Creation & Update forms markup for Eloquent Models.
 
