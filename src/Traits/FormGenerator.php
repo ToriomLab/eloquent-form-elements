@@ -1,6 +1,7 @@
 <?php
 namespace ToriomLab\EloquentFormElements\Traits;
 use Session;
+
 trait FormGenerator
 {
     protected static $initialInput           = 'input';
